@@ -1,5 +1,6 @@
 module.exports = {
     entry: './src/static/index.js',
+    target: "electron-renderer",
     output: {
         path: __dirname + '/dist',
 	publicPath: '/assets/',
@@ -21,8 +22,7 @@ module.exports = {
 	minimize: false,
     },
     devServer: { 
-	inline: true,
-	port: 9000,
-    }
-
+	    inline: true,
+	    port: 9000,
+    },
 }

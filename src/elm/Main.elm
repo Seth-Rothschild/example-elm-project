@@ -81,11 +81,19 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
   div []
-    [ h2 [] [ text ("Random " ++ model.textField ++ "s")]
+    [ h2 [] [ text ("Random " ++ (namer model.textField))]
     , viewGif model
     ]
 
+namer : String -> String
+namer input = 
+  if input == "" then
+    "Gifs"
 
+  else
+    input ++ "s"
+
+    
 viewGif : Model -> Html Msg
 viewGif model =
   case model.result of

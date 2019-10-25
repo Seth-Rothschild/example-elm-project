@@ -7,14 +7,13 @@ const BrowserWindow = electron.BrowserWindow // This is a Module that creates wi
 let mainWindow // saves a global reference to mainWindow so it doesn't get garbage collected
 
 app.on('ready', createWindow) // called when electron has initialized
-
 // This will create our app window, no surprise there
 function createWindow () {
   mainWindow = new BrowserWindow({
     width: 1024,
     height: 768,
-    webPreferencs: {
-      nodeIntegration: true
+    webPreferences: {
+      nodeIntegration: true,
     }
   })
 
@@ -40,4 +39,8 @@ app.on('window-all-closed', () => {
 // if there is no mainWindow it creates one (like when you click the dock icon)
 app.on('activate', () => {
   if (mainWindow === null) { createWindow() }
+})
+electron.ipcMain.on('synchronous-message', (event, arg) => {
+  console.log(arg) // prints "ping"
+  event.returnValue = 'pong'
 })
