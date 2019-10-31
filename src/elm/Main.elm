@@ -41,7 +41,7 @@ defaultModel =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( defaultModel, Routes.getRandomGif defaultModel.textField )
+    ( defaultModel, Cmd.map RoutesMsg (Routes.getRandomGif defaultModel.textField) )
 
 
 
@@ -56,10 +56,17 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         RoutesMsg msg_ ->
-            Routes.update msg_ model
+            updateWith RoutesMsg model
+              <| Routes.update msg_
+              <| model
+              
 
 
-
+updateWith : (subMsg -> Msg) -> Model -> ( Model, Cmd subMsg ) -> ( Model, Cmd Msg )
+updateWith toMsg model ( subModel, subCmd ) =
+    ( subModel
+    , Cmd.map toMsg subCmd
+    )
 -- SUBSCRIPTIONS
 
 
@@ -76,7 +83,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ h2 [] [ text ("Random " ++ namer model.textField) ]
-        , Routes.viewGif model
+        , Html.map RoutesMsg (Routes.viewGif model)
         ]
 
 
