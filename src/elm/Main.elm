@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Animation exposing (px, Interpolation )
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -29,6 +30,7 @@ main =
 type alias Model =
     { result : Routes.Outcome
     , textField : String
+    , style : Animation.State
     }
 
 
@@ -36,6 +38,11 @@ defaultModel : Model
 defaultModel =
     { result = Routes.Loading
     , textField = "Dog"
+    , style = Animation.style 
+        [ Animation.paddingLeft (px 300.0)
+        , Animation.paddingTop(px 0.0)
+        , Animation.opacity 1.0 
+        ]
     }
 
 
@@ -50,16 +57,36 @@ init _ =
 
 type Msg
     = RoutesMsg Routes.Msg
+    | Animate Animation.Msg
+    | FadeInAndOut
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         RoutesMsg msg_ ->
-            updateWith RoutesMsg model
-              <| Routes.update msg_
-              <| model
-              
+            updateWith RoutesMsg model <|
+                Routes.update msg_ <|
+                    model
+
+        Animate msg_ ->
+            ( { model | style = Animation.update msg_ model.style }, Cmd.none )
+
+        FadeInAndOut ->
+            ( { model
+                | style =
+                    Animation.interrupt
+                        [ Animation.toWith (Animation.spring {stiffness=100, damping=10 })
+                            [ Animation.paddingLeft (px 50.0)
+                            ]
+                        , Animation.toWith (Animation.spring {stiffness=100, damping=10 })
+                            [ Animation.paddingLeft (px 300.0)
+                            ]
+                        ]
+                        model.style
+              }
+            , Cmd.none
+            )
 
 
 updateWith : (subMsg -> Msg) -> Model -> ( Model, Cmd subMsg ) -> ( Model, Cmd Msg )
@@ -67,12 +94,15 @@ updateWith toMsg model ( subModel, subCmd ) =
     ( subModel
     , Cmd.map toMsg subCmd
     )
+
+
+
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Animation.subscription Animate [ model.style ]
 
 
 
@@ -81,7 +111,7 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    div []
+    div (Animation.render model.style ++ [onClick FadeInAndOut])
         [ h2 [] [ text ("Random " ++ namer model.textField) ]
         , Html.map RoutesMsg (Routes.viewGif model)
         ]
